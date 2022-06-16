@@ -11,31 +11,31 @@ datasource db {
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  createdAt DateTime   @default(now())
-  updatedAt DateTime?  @updatedAt
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
   deletedAt DateTime?
-  name      String     @db.VarChar(250)
+  name      String    @db.VarChar(250)
   age       Int
-  email     String     @unique @db.VarChar(250)
-  phone     String     @unique @db.VarChar(250)
-  login     String     @db.VarChar(250)
+  email     String    @unique @db.VarChar(250)
+  phone     String    @unique @db.VarChar(250)
+  login     String    @db.VarChar(250)
   status    Boolean
-  password  String     @db.VarChar(250)
-  role      Role       @default(USER)
+  password  String    @db.VarChar(250)
+  role      Role      @default(USER)
   posts     Post[]
   comments  Comment[]
 }
 
 model Post {
-  id        Int        @id @default(autoincrement())
-  createdAt DateTime   @default(now())
-  updatedAt DateTime?  @updatedAt
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
   deletedAt DateTime?
-  title     String     @db.VarChar(250)
-  text      String     @db.Text
-  published Boolean?   @default(false)
-  author    User?      @relation(fields: [authorId], references: [id])
+  title     String    @db.VarChar(250)
+  text      String    @db.Text
+  published Boolean?  @default(false)
+  author    User?     @relation(fields: [authorId], references: [id])
   authorId  Int?
   comments  Comment[]
 }
@@ -52,6 +52,15 @@ model Comment {
   post      Post?     @relation(fields: [postId], references: [id])
   User      User?     @relation(fields: [userId], references: [id])
   userId    Int?
+}
+
+model TokenPair {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+  access_token    String    @db.VarChar(255)
+  refresh_token   String    @db.VarChar(255)
 }
 
 enum Role {

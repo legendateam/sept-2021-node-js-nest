@@ -1,4 +1,11 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { User } from '@prisma/client';
 
 import { CreatedUserDto } from './dto';
@@ -6,20 +13,27 @@ import { IResponse } from '../../interfaces';
 import { AuthService } from './auth.service';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { ITokensPair } from './interfaces';
+import { LoginDto } from './dto/login.dto';
+import { IsUserExistGuard } from './guards';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @UseGuards(IsUserExistGuard)
   @ApiOperation({ summary: 'create User' })
-  @ApiOkResponse({
-    status: HttpStatus.OK,
+  @ApiCreatedResponse({
+    status: HttpStatus.CREATED,
     schema: {
       example: {
         id: 1,
@@ -50,5 +64,24 @@ export class AuthController {
   @Post('registration')
   public createUser(@Body() data: CreatedUserDto): Promise<IResponse<User>> {
     return this.authService.createUser(data);
+  }
+
+  @ApiOperation({ summary: 'User authorization' })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        data: {
+          access:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
+          refresh:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse()
+  @Post('login')
+  public login(@Body() data: LoginDto): Promise<IResponse<ITokensPair>> {
+    return this.authService.login(data);
   }
 }
