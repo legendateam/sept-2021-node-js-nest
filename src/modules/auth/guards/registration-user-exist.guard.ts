@@ -5,13 +5,17 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-
-import { PrismaService } from '../../../core/prisma.service';
 import { Prisma } from '@prisma/client';
 
+import { PrismaService } from '../../../core/prisma.service';
+import { UserService } from '../../user/user.service';
+
 @Injectable()
-export class IsUserExistGuard implements CanActivate {
-  constructor(private readonly prismaService: PrismaService) {}
+export class RegistrationUserExistGuard implements CanActivate {
+  constructor(
+    private readonly prismaService: PrismaService,
+    private userService: UserService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
@@ -29,20 +33,13 @@ export class IsUserExistGuard implements CanActivate {
 
       const { email, phone } = request.body as Prisma.UserCreateInput;
 
-      const user = await this.prismaService.user.findFirst({
-        where: {
-          OR: [{ phone: phone as string }, { email: email as string }],
-        },
+      const user = await this.userService.getOneByEmailOrPhone({
+        email,
+        phone,
       });
 
       if (user) {
-        throw new HttpException(
-          {
-            status: HttpStatus.FOUND,
-            error: 'User is already registered',
-          },
-          HttpStatus.FOUND,
-        );
+        throw new HttpException('User is already registered', HttpStatus.FOUND);
       }
 
       return true;

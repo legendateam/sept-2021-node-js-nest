@@ -15,7 +15,7 @@ import { Comment } from '@prisma/client';
 import { IResponse } from '../../interfaces';
 import { CommentService } from './comment.service';
 import { CreateCommentDto, UpdateCommentDto } from './dto';
-import { MainEnum } from "../../enum";
+import { MainEnum } from '../../enum';
 
 @ApiTags('comments')
 @Controller('comments')

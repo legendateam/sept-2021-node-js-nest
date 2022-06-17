@@ -11,20 +11,21 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime?   @updatedAt
   deletedAt DateTime?
-  name      String    @db.VarChar(250)
+  name      String      @db.VarChar(250)
   age       Int
-  email     String    @unique @db.VarChar(250)
-  phone     String    @unique @db.VarChar(250)
-  login     String    @db.VarChar(250)
+  email     String      @unique @db.VarChar(250)
+  phone     String      @unique @db.VarChar(250)
+  login     String      @db.VarChar(250)
   status    Boolean
-  password  String    @db.VarChar(250)
-  role      Role      @default(USER)
+  password  String      @db.VarChar(250)
+  role      Role        @default(USER)
   posts     Post[]
   comments  Comment[]
+  TokenPair TokenPair[]
 }
 
 model Post {
@@ -55,12 +56,13 @@ model Comment {
 }
 
 model TokenPair {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
-  access_token    String    @db.VarChar(255)
-  refresh_token   String    @db.VarChar(255)
+  id            Int       @id @default(autoincrement())
+  createdAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  access_token  String    @unique @db.VarChar(255)
+  refresh_token String    @unique @db.VarChar(255)
+  userId        Int
+  User          User?     @relation(fields: [userId], references: [id])
 }
 
 enum Role {

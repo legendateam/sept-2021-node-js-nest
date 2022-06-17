@@ -6,8 +6,9 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  Length, Min,
-} from "class-validator";
+  Length,
+  Min,
+} from 'class-validator';
 
 export class CreateCommentDto {
   @ApiProperty({

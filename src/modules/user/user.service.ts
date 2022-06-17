@@ -33,6 +33,17 @@ export class UserService {
     return { data: users };
   }
 
+  public async getOneByEmailOrPhone({
+    email,
+    phone,
+  }: Prisma.UserWhereUniqueInput): Promise<User> {
+    return this.prismaService.user.findFirst({
+      where: {
+        OR: [{ phone: phone as string }, { email: email as string }],
+      },
+    });
+  }
+
   public async getOneById(paramsId: string): Promise<IResponse<User>> {
     const id = Number(paramsId);
     const user = await this.prismaService.user.findUnique({ where: { id } });

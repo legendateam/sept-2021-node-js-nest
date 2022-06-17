@@ -3,7 +3,9 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
@@ -22,15 +24,21 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ITokensPair } from './interfaces';
-import { LoginDto } from './dto/login.dto';
-import { IsUserExistGuard } from './guards';
+import { AuthGuard, RegistrationUserExistGuard } from './guards';
+import {
+  IRequestUserMiddleware,
+  ITokenMiddleware,
+} from './interfaces/middlewares';
+import { LoginUserExistGuard } from './guards';
+import { MainEnum } from '../../enum';
+import { ForgotPasswordDto } from './dto/forgot-passwrod.dto';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @UseGuards(IsUserExistGuard)
+  @UseGuards(RegistrationUserExistGuard)
   @ApiOperation({ summary: 'create User' })
   @ApiCreatedResponse({
     status: HttpStatus.CREATED,
@@ -66,6 +74,7 @@ export class AuthController {
     return this.authService.createUser(data);
   }
 
+  @UseGuards(LoginUserExistGuard)
   @ApiOperation({ summary: 'User authorization' })
   @ApiOkResponse({
     schema: {
@@ -75,13 +84,114 @@ export class AuthController {
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
           refresh:
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
+          userid: 1,
         },
       },
     },
   })
-  @ApiUnauthorizedResponse()
+  @ApiUnauthorizedResponse({
+    schema: {
+      example: {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Wrong token',
+        error: 'UNAUTHORIZED',
+      },
+    },
+  })
   @Post('login')
-  public login(@Body() data: LoginDto): Promise<IResponse<ITokensPair>> {
-    return this.authService.login(data);
+  public login(
+    @Req() req: IRequestUserMiddleware,
+  ): Promise<IResponse<ITokensPair>> {
+    const user = req.user;
+    return this.authService.login(user);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'logout with a token' })
+  @ApiOkResponse({
+    status: HttpStatus.OK,
+    schema: {
+      example: {
+        data: 'Successfully',
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    schema: {
+      example: {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Wrong token',
+        error: 'UNAUTHORIZED',
+      },
+    },
+  })
+  @Post('logout')
+  public logout(
+    @Req() req: ITokenMiddleware,
+  ): Promise<IResponse<MainEnum.SUCCESSFULLY>> {
+    const accessToken = req.token;
+    return this.authService.logout(accessToken);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'forgot password' })
+  @ApiOkResponse({
+    status: HttpStatus.OK,
+    schema: {
+      example: {
+        data: 'Successfully',
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Wrong token',
+        error: 'Bad Request',
+      },
+    },
+  })
+  @Patch('forgot-password')
+  public forgotPassword(
+    @Req() req: ITokenMiddleware,
+    @Body() data: ForgotPasswordDto,
+  ): Promise<IResponse<MainEnum.SUCCESSFULLY>> {
+    const access_token = req.token;
+    return this.authService.forgotPassword(access_token, data);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'refresh for new generate pair tokens access and refresh',
+  })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        data: {
+          access:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
+          refresh:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
+          userid: 1,
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    schema: {
+      example: {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Wrong token',
+        error: 'UNAUTHORIZED',
+      },
+    },
+  })
+  @Post('refresh')
+  public async refresh(
+    @Req() req: ITokenMiddleware,
+  ): Promise<IResponse<ITokensPair>> {
+    const refresh_token = req.token;
+    return this.authService.refresh(refresh_token);
   }
 }

@@ -14,7 +14,7 @@ export class UpdatePostDto {
     required: false,
     name: `title`,
     minLength: 4,
-    maxLength: 50
+    maxLength: 50,
   })
   @IsString()
   @Length(4, 50, { message: 'title length min 4 and max 25' })
@@ -27,7 +27,7 @@ export class UpdatePostDto {
     required: false,
     name: 'text',
     minLength: 6,
-    maxLength: 1000
+    maxLength: 1000,
   })
   @IsString()
   @Length(6, 1000)

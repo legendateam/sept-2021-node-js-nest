@@ -16,7 +16,7 @@ export class CreatePostDto {
     required: true,
     name: 'title',
     minLength: 4,
-    maxLength: 50
+    maxLength: 50,
   })
   @IsNotEmpty()
   @IsString()
@@ -30,7 +30,7 @@ export class CreatePostDto {
     required: true,
     name: 'text',
     minLength: 4,
-    maxLength: 1000
+    maxLength: 1000,
   })
   @IsString()
   @IsNotEmpty()

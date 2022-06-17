@@ -1,18 +1,16 @@
-import { IsEmail, IsNotEmpty, IsString, Length, Matches } from "class-validator";
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+
 import { regEx } from '../../user/constants';
+import { AuthDto } from './auth.dto';
 
-export class LoginDto {
-  @ApiProperty({
-    name: 'email',
-    example: 'name@gmail.com',
-    uniqueItems: true,
-    required: true,
-  })
-  @IsEmail()
-  @IsNotEmpty()
-  public email: string;
-
+export class ForgotPasswordDto extends AuthDto {
   @IsString()
   @ApiProperty({
     readOnly: true,
@@ -28,5 +26,5 @@ export class LoginDto {
       'The password must have one uppercase letter,' +
       'one lowercase letter and one digit',
   })
-  public password: string;
+  public newPassword: string;
 }

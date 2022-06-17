@@ -1,19 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma, User, TokenPair } from '@prisma/client';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { Prisma, TokenPair, User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
-import bcrypt from 'bcrypt';
 
+import bcrypt from 'bcrypt';
 import { IResponse } from '../../interfaces';
 import { PrismaService } from '../../core/prisma.service';
 import { mainConfig } from '../../configs';
-import { ITokensPair } from './interfaces';
 import { JwtTokensPairEnum } from './enum';
+import { MainEnum } from '../../enum';
+import { UserService } from '../user/user.service';
+import { IForgotPassword, IPayload, ITokensPair } from './interfaces';
+
+3;
 
 @Injectable()
 export class AuthService {
   constructor(
     private prismaService: PrismaService,
-    private readonly jwtService: JwtService,
+    private jwtService: JwtService,
+    private userService: UserService,
   ) {}
 
   public async createUser(
@@ -30,18 +41,120 @@ export class AuthService {
     return { data: { ...userDB, password: hashPassword } };
   }
 
-  public async login(
-    data: Prisma.UserUpdateInput,
-  ): Promise<IResponse<ITokensPair>> {
-    const { access, refresh } = await this.generateTokensPair(data);
+  public async login(data: User): Promise<IResponse<ITokensPair>> {
+    const { access, refresh } = await this._generateTokensPair(data);
+
     return {
-      data: { access, refresh },
+      data: { access, refresh, userId: data.id },
     };
   }
 
-  private generateTokensPair(payload: Prisma.UserUpdateInput): ITokensPair {
+  public async logout(
+    access: string,
+  ): Promise<IResponse<MainEnum.SUCCESSFULLY>> {
+    const accessVerify = this._verifyToken(access);
+
+    if (!accessVerify) {
+      throw new HttpException('Hacker?)', HttpStatus.BAD_REQUEST);
+    }
+
+    const tokenDB = await this.prismaService.tokenPair.findUnique({
+      where: { access_token: access },
+    });
+
+    if (!tokenDB) {
+      throw new UnauthorizedException();
+    }
+
+    await this.prismaService.tokenPair.delete({
+      where: { access_token: access },
+    });
+
+    return { data: MainEnum.SUCCESSFULLY };
+  }
+
+  public async forgotPassword(
+    access_token: string,
+    data: IForgotPassword,
+  ): Promise<IResponse<MainEnum.SUCCESSFULLY>> {
+    const verifyToken = this._verifyToken(access_token);
+
+    if (!verifyToken) {
+      throw new BadRequestException();
+    }
+
+    const tokenDataDb = await this.prismaService.tokenPair.findUnique({
+      where: { access_token },
+    });
+
+    if (!tokenDataDb) {
+      throw new BadRequestException();
+    }
+
+    const user = await this.userService.getOneByEmailOrPhone({
+      email: data.email as string,
+    });
+
+    if (!user) {
+      throw new BadRequestException();
+    }
+
+    const passwordCompare = await bcrypt.compare(
+      data.password as string,
+      user.password,
+    );
+
+    if (!passwordCompare) {
+      throw new UnauthorizedException();
+    }
+
+    const passwordHashed = await bcrypt.hash(
+      data.newPassword,
+      Number(mainConfig.BCRYPT_SALT),
+    );
+    await this.prismaService.user.update({
+      where: { id: user.id },
+      data: { password: passwordHashed },
+    });
+
+    return { data: MainEnum.SUCCESSFULLY };
+  }
+
+  public async refresh(refresh_token: string): Promise<IResponse<ITokensPair>> {
+    const verifyToken = this._verifyToken(
+      refresh_token,
+      JwtTokensPairEnum.REFRESH,
+    );
+    if (!verifyToken) {
+      throw new UnauthorizedException();
+    }
+
+    const refreshTokenDB = await this.prismaService.tokenPair.findUnique({
+      where: { refresh_token },
+    });
+
+    if (!refreshTokenDB) {
+      throw new UnauthorizedException('hacker?)');
+    }
+
+    const generatedTokens = await this._generateTokensPair(verifyToken);
+    await this.prismaService.tokenPair.delete({ where: { refresh_token } });
+
+    return { data: generatedTokens };
+  }
+
+  private async _generateTokensPair({
+    name,
+    id,
+    role,
+    status,
+    age,
+    login,
+  }: IPayload | User): Promise<ITokensPair> {
+    const payload = { name, id, role, status, age, login };
+
     const access = this.jwtService.sign(payload, {
-      secret: mainConfig.EXPIRES_ACCESS_TOKEN,
+      secret: mainConfig.SECRET_KEY_ACCESS_TOKEN,
       expiresIn: mainConfig.EXPIRES_ACCESS_TOKEN,
     });
 
@@ -50,10 +163,21 @@ export class AuthService {
       expiresIn: mainConfig.EXPIRES_REFRESH_TOKEN,
     });
 
-    return { refresh, access };
+    await this._saveTokensPair({
+      data: {
+        access_token: access,
+        refresh_token: refresh,
+        userId: id,
+      },
+    });
+
+    return { refresh, access, userId: id };
   }
 
-  private verifyToken(token: string, type = JwtTokensPairEnum.ACCESS): User {
+  private _verifyToken(
+    token: string,
+    type = JwtTokensPairEnum.ACCESS,
+  ): IPayload {
     let secretWord = mainConfig.SECRET_KEY_ACCESS_TOKEN;
 
     if (type === JwtTokensPairEnum.REFRESH) {
@@ -63,9 +187,9 @@ export class AuthService {
     return this.jwtService.verify(token, { secret: secretWord });
   }
 
-  private saveTokensPair(
-    tokens: Prisma.TokenPairCreateInput,
+  private async _saveTokensPair(
+    tokens: Prisma.TokenPairCreateArgs,
   ): Promise<TokenPair> {
-    return this.prismaService.tokenPair.create({ data: tokens });
+    return this.prismaService.tokenPair.create(tokens);
   }
 }
