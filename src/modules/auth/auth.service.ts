@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { Prisma, TokenPair, User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
+import fs from 'fs';
+import path from 'path';
 
 import bcrypt from 'bcrypt';
 import { IResponse } from '../../interfaces';
@@ -16,8 +18,8 @@ import { JwtTokensPairEnum } from './enum';
 import { MainEnum } from '../../enum';
 import { UserService } from '../user/user.service';
 import { IForgotPassword, IPayload, ITokensPair } from './interfaces';
-
-3;
+import { S3Service } from '../s3/s3.service';
+import { TypeFileUploadEnum } from '../../enum/type-file-upload.enum';
 
 @Injectable()
 export class AuthService {
@@ -25,20 +27,47 @@ export class AuthService {
     private prismaService: PrismaService,
     private jwtService: JwtService,
     private userService: UserService,
+    private s3Service: S3Service,
   ) {}
 
   public async createUser(
     user: Prisma.UserCreateInput,
+    file: Express.Multer.File,
   ): Promise<IResponse<User>> {
+    const userExists = await this.userService.getOneByEmailOrPhone({
+      email: user.email,
+      phone: user.phone,
+    });
+    if (userExists) {
+      throw new HttpException('User is already registered', HttpStatus.FOUND);
+    }
+
     const hashPassword = await bcrypt.hash(
       user.password,
       Number(mainConfig.BCRYPT_SALT),
     );
+
+    try {
+      await this.s3Service.fileUpload(file, TypeFileUploadEnum.USERS);
+
+      fs.unlink(path.join(process.cwd(), 'avatars', file.filename), (err) => {
+        if (err) console.error(err.message);
+      });
+    } catch (e) {
+      if (e) console.error(e.message);
+    }
+
     const userDB = await this.prismaService.user.create({
-      data: { ...user, password: hashPassword },
+      data: {
+        ...user,
+        password: hashPassword,
+        age: Number(user.age),
+        status: Boolean(user.status),
+        avatar: file.filename,
+      },
     });
 
-    return { data: { ...userDB, password: hashPassword } };
+    return { data: userDB };
   }
 
   public async login(data: User): Promise<IResponse<ITokensPair>> {

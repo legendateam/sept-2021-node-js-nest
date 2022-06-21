@@ -23,6 +23,7 @@ model User {
   status    Boolean
   password  String      @db.VarChar(250)
   role      Role        @default(USER)
+  avatar    String?
   posts     Post[]
   comments  Comment[]
   TokenPair TokenPair[]

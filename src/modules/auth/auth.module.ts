@@ -7,6 +7,9 @@ import { PrismaService } from '../../core/prisma.service';
 import { AuthGuard, RegistrationUserExistGuard } from './guards';
 import { UserModule } from '../user/user.module';
 import { UserService } from '../user/user.service';
+import { S3Module } from '../s3/s3.module';
+import { S3Service } from '../s3/s3.service';
+import { FileUploadInterceptorService } from '../../helpers';
 
 @Module({
   providers: [
@@ -14,9 +17,11 @@ import { UserService } from '../user/user.service';
     PrismaService,
     RegistrationUserExistGuard,
     AuthGuard,
-    UserService
+    UserService,
+    S3Service,
+    FileUploadInterceptorService,
   ],
   controllers: [AuthController],
-  imports: [JwtModule, forwardRef(() => UserModule)],
+  imports: [JwtModule, forwardRef(() => UserModule), S3Module],
 })
 export class AuthModule {}

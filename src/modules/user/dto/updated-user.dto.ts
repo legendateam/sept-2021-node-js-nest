@@ -39,4 +39,15 @@ export class UpdatedUserDto {
   @IsOptional()
   @IsBoolean()
   public status?: boolean;
+
+  @ApiProperty({
+    required: false,
+    default: null,
+    description: 'photo mimetype include image/jpeg image/png image/pjpeg',
+    name: 'avatar',
+  })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  public avatar?: string;
 }

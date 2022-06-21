@@ -11,4 +11,8 @@ export const mainConfig = {
   EXPIRES_ACCESS_TOKEN: process.env.EXPIRES_ACCESS_TOKEN || '1h',
   EXPIRES_REFRESH_TOKEN: process.env.EXPIRES_REFRESH_TOKEN || '8h',
   BCRYPT_SALT: process.env.BCRYPT_SALT || 5,
+  S3_NAME: process.env.S3_NAME,
+  S3_REGION: process.env.S3_REGION,
+  S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
+  S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
 };

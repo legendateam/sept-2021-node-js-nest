@@ -39,10 +39,8 @@ export class CreatedUserDto {
     maximum: 250,
     required: true,
   })
-  @IsNumber()
   @IsNotEmpty()
-  @Min(12)
-  @Max(250)
+  @IsString()
   public age: number;
 
   @ApiProperty({
@@ -92,7 +90,7 @@ export class CreatedUserDto {
     required: true,
     name: 'status',
   })
-  @IsBoolean()
+  @IsString()
   @IsNotEmpty()
   public status: boolean;
 
@@ -117,4 +115,15 @@ export class CreatedUserDto {
   @IsEnum(RoleEnum)
   @Length(4, 5)
   public role?: RoleEnum;
+
+  @ApiProperty({
+    required: false,
+    default: null,
+    description: 'photo mimetype include image/jpeg image/png image/pjpeg',
+    name: 'avatar',
+  })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  public avatar?: string;
 }

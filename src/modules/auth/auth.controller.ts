@@ -6,7 +6,9 @@ import {
   Patch,
   Post,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 
@@ -15,30 +17,30 @@ import { IResponse } from '../../interfaces';
 import { AuthService } from './auth.service';
 import {
   ApiBadRequestResponse,
-  ApiBearerAuth,
   ApiCreatedResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+
 import { ITokensPair } from './interfaces';
-import { AuthGuard, RegistrationUserExistGuard } from './guards';
+import { AuthGuard, LoginUserExistGuard } from './guards';
 import {
   IRequestUserMiddleware,
   ITokenMiddleware,
 } from './interfaces/middlewares';
-import { LoginUserExistGuard } from './guards';
 import { MainEnum } from '../../enum';
 import { ForgotPasswordDto } from './dto/forgot-passwrod.dto';
+import { diskStorage } from 'multer';
+import { fileName, fileFilter } from '../../helpers';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @UseGuards(RegistrationUserExistGuard)
   @ApiOperation({ summary: 'create User' })
   @ApiCreatedResponse({
     status: HttpStatus.CREATED,
@@ -69,9 +71,21 @@ export class AuthController {
     },
   })
   @HttpCode(HttpStatus.OK)
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorage({
+        destination: './avatars',
+        filename: fileName,
+      }),
+      fileFilter: fileFilter,
+    }),
+  )
   @Post('registration')
-  public createUser(@Body() data: CreatedUserDto): Promise<IResponse<User>> {
-    return this.authService.createUser(data);
+  public createUser(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() data: CreatedUserDto,
+  ): Promise<IResponse<User>> {
+    return this.authService.createUser(data, file);
   }
 
   @UseGuards(LoginUserExistGuard)

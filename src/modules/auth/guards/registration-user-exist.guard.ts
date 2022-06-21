@@ -33,14 +33,7 @@ export class RegistrationUserExistGuard implements CanActivate {
 
       const { email, phone } = request.body as Prisma.UserCreateInput;
 
-      const user = await this.userService.getOneByEmailOrPhone({
-        email,
-        phone,
-      });
 
-      if (user) {
-        throw new HttpException('User is already registered', HttpStatus.FOUND);
-      }
 
       return true;
     } catch (e) {

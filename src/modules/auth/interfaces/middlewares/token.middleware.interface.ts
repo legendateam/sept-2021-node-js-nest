@@ -1,3 +1,3 @@
 export interface ITokenMiddleware extends Request {
-  token: string
+  token: string;
 }
