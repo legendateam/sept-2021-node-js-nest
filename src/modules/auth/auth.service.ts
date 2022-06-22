@@ -50,24 +50,24 @@ export class AuthService {
     try {
       await this.s3Service.fileUpload(file, TypeFileUploadEnum.USERS);
 
+      const userDB = await this.prismaService.user.create({
+        data: {
+          ...user,
+          password: hashPassword,
+          age: Number(user.age),
+          status: Boolean(user.status),
+          avatar: file.filename,
+        },
+      });
+
       fs.unlink(path.join(process.cwd(), 'avatars', file.filename), (err) => {
         if (err) console.error(err.message);
       });
+
+      return { data: userDB };
     } catch (e) {
       if (e) console.error(e.message);
     }
-
-    const userDB = await this.prismaService.user.create({
-      data: {
-        ...user,
-        password: hashPassword,
-        age: Number(user.age),
-        status: Boolean(user.status),
-        avatar: file.filename,
-      },
-    });
-
-    return { data: userDB };
   }
 
   public async login(data: User): Promise<IResponse<ITokensPair>> {
@@ -81,7 +81,7 @@ export class AuthService {
   public async logout(
     access: string,
   ): Promise<IResponse<MainEnum.SUCCESSFULLY>> {
-    const accessVerify = this._verifyToken(access);
+    const accessVerify = this.verifyToken(access);
 
     if (!accessVerify) {
       throw new HttpException('Hacker?)', HttpStatus.BAD_REQUEST);
@@ -106,7 +106,7 @@ export class AuthService {
     access_token: string,
     data: IForgotPassword,
   ): Promise<IResponse<MainEnum.SUCCESSFULLY>> {
-    const verifyToken = this._verifyToken(access_token);
+    const verifyToken = this.verifyToken(access_token);
 
     if (!verifyToken) {
       throw new BadRequestException();
@@ -150,7 +150,7 @@ export class AuthService {
   }
 
   public async refresh(refresh_token: string): Promise<IResponse<ITokensPair>> {
-    const verifyToken = this._verifyToken(
+    const verifyToken = this.verifyToken(
       refresh_token,
       JwtTokensPairEnum.REFRESH,
     );
@@ -203,10 +203,7 @@ export class AuthService {
     return { refresh, access, userId: id };
   }
 
-  private _verifyToken(
-    token: string,
-    type = JwtTokensPairEnum.ACCESS,
-  ): IPayload {
+  public verifyToken(token: string, type = JwtTokensPairEnum.ACCESS): IPayload {
     let secretWord = mainConfig.SECRET_KEY_ACCESS_TOKEN;
 
     if (type === JwtTokensPairEnum.REFRESH) {

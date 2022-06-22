@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="https://cdn.socket.io/4.4.1/socket.io.min.js" integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H" crossorigin="anonymous"></script>
+  <title>Document</title>
+  <style>
+    .message {
+        width: 300px;
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: column;
+        overflow: scroll;
+    }
+  </style>
+</head>
+<body>
+<div id="main" style="display: flex; justify-content: space-between">
+  <div>
+    <button id="Room1" class="join_room">room - 1</button>
+    <button id="Room2" class="join_room">room - 2</button>
+    <button id="Room3" class="join_room">room - 3</button>
+  </div>
+
+  <div id="content"></div>
+</div>
+<script type="module">
+  const socket = io("http://localhost:2500")
+
+  const btnRooms = document.getElementsByClassName("join_room");
+  const content = document.getElementById("content");
+
+
+  for (const btnRoom of btnRooms) {
+    btnRoom.onclick = (e) => {
+      e.preventDefault();
+      socket.emit('join', {
+        access_token:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiT2xlZyIsImlkIjoyLCJyb2xlIjoiVVNFUiIsInN0YXR1cyI6dHJ1ZSwiYWdlIjo1NCwibG9naW4iOiJ1c2VyciIsImlhdCI6MTY1NTkzMzQ3NywiZXhwIjoxNjU1OTM1Mjc3fQ.VdXr1sOODtBc15TdxrdYCSoAb39VG7_Bp1op3Zirbeg',
+        roomName: btnRoom.id })
+
+      const room = document.createElement("div");
+      const chat = document.createElement("div");
+      const btn = document.createElement("button");
+      const form = document.createElement("form");
+      const textarea = document.createElement("textarea");
+      const welcome = document.createElement("p");
+
+      textarea.name = `text${btnRoom.id}`;
+      form.append(textarea, btn);
+
+      socket.on('join', ({ message, name }) => {
+        welcome.innerText = message;
+        textarea.onfocus = () => {
+          const message = document.createElement('p')
+          message.classList.add('writing');
+          message.innerText = `${name}: пише повідомлення.............`
+          chat.append(message);
+        }
+      })
+      btn.innerText = "send";
+
+      chat.classList.add('message')
+      room.append(welcome);
+      room.append(welcome,chat,form);
+      room.classList.add(btnRoom.id);
+      content.append(room);
+
+      textarea.onblur = () => {
+        const message = document.getElementsByClassName('writing')[0];
+        message.remove();
+      }
+
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        socket.emit('createMessage', textarea.value)
+      };
+    };
+  }
+
+  socket.on('createdMessage', ({ name, text }) => {
+    const message = document.createElement('p');
+    const chat = document.getElementsByClassName('message')[0];
+    message.innerText = `${name}: ${text}`;
+    chat.append(message)
+  })
+
+</script>
+</body>
+</html>

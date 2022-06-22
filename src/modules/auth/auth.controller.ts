@@ -11,7 +11,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
-
 import { CreatedUserDto } from './dto';
 import { IResponse } from '../../interfaces';
 import { AuthService } from './auth.service';

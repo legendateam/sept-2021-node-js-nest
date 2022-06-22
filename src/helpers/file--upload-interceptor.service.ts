@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
-import { S3Service } from '../modules/s3/s3.service';
 import e from 'express';
 import path from 'path';
 import { v4 } from 'uuid';
@@ -8,7 +7,6 @@ import { mimetypeConstant } from '../constants';
 
 @Injectable()
 export class FileUploadInterceptorService {
-  constructor(private s3: S3Service) {}
 
   public static async fileName(
     req: e.Request,

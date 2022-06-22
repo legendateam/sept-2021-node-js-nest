@@ -6,12 +6,19 @@ import { IResponse } from '../../interfaces';
 import { MainEnum } from '../../enum';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { S3Service } from '../s3/s3.service';
+import { TypeFileUploadEnum } from '../../enum/type-file-upload.enum';
+import fs from 'fs';
+import path from 'path';
 
 dayjs.extend(utc);
 
 @Injectable()
 export class UserService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private s3Service: S3Service,
+  ) {}
 
   public async getAll(): Promise<IResponse<User[]>> {
     const users = await this.prismaService.user.findMany({
@@ -64,8 +71,9 @@ export class UserService {
   public async updateOne(
     { status, role, name }: Prisma.UserUpdateInput,
     paramsId: string,
+    file: Express.Multer.File,
   ): Promise<IResponse<User>> {
-    if (!status && !role && !name) {
+    if (!status && !role && !name && !file) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
@@ -75,10 +83,21 @@ export class UserService {
       );
     }
 
+    if (file) {
+      try {
+        await this.s3Service.fileUpload(file, TypeFileUploadEnum.USERS);
+        fs.unlink(path.join(process.cwd(), 'avatars', file.filename), (err) => {
+          if (err) console.error(err.message);
+        });
+      } catch (e) {
+        if (e) console.error(e.message);
+      }
+    }
+
     const id = Number(paramsId);
     const updatedUser = await this.prismaService.user.update({
       where: { id },
-      data: { status, role, name },
+      data: { status, role, name, avatar: file.filename },
     });
 
     return {

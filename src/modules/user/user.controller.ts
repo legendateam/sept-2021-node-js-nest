@@ -7,6 +7,8 @@ import {
   HttpStatus,
   Param,
   Patch,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
@@ -15,6 +17,9 @@ import { IResponse } from '../../interfaces';
 import { UserService } from './user.service';
 import { UpdatedUserDto } from './dto';
 import { MainEnum } from '../../enum';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { fileFilter, fileName } from '../../helpers';
 
 @ApiTags('users')
 @Controller('users')
@@ -157,13 +162,23 @@ export class UserController {
       },
     },
   })
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorage({
+        destination: './avatars',
+        filename: fileName,
+      }),
+      fileFilter: fileFilter,
+    }),
+  )
   @HttpCode(HttpStatus.OK)
   @Patch(':id')
   public async updateOne(
+    @UploadedFile() file: Express.Multer.File,
     @Param('id') id: string,
     @Body() data: UpdatedUserDto,
   ): Promise<IResponse<User>> {
-    return this.userService.updateOne(data, id);
+    return this.userService.updateOne(data, id, file);
   }
 
   @ApiOperation({ summary: 'delete for user, but further stored in db' })

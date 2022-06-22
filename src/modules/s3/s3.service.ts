@@ -19,6 +19,7 @@ export class S3Service {
     file: Express.Multer.File,
     itemType: TypeFileUploadEnum,
   ): Promise<void> {
+
     const path = this._pathBuilder(file.filename, itemType);
 
     await this.Bucket.upload({
