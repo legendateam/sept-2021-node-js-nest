@@ -464,12 +464,12 @@
 								},
 								{
 									"key": "email",
-									"value": "{{email}}",
+									"value": "{{emailWithoutAvatar}}",
 									"type": "text"
 								},
 								{
 									"key": "phone",
-									"value": "{{phone}}",
+									"value": "{{phoneWithoutAvatar}}",
 									"type": "text"
 								},
 								{
