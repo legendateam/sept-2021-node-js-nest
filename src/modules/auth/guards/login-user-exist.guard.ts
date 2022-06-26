@@ -31,7 +31,8 @@ export class LoginUserExistGuard implements CanActivate {
       if (!user) {
         throw new NotFoundException({
           status: HttpStatus.NOT_FOUND,
-          error: 'User does not exist, please registration',
+          message: 'User does not exist, please registration',
+          error: 'Not Found',
         });
       }
 
@@ -40,7 +41,8 @@ export class LoginUserExistGuard implements CanActivate {
       if (!compare) {
         throw new UnauthorizedException({
           status: HttpStatus.UNAUTHORIZED,
-          error: 'Wrong email or password',
+          message: 'Wrong email or password',
+          error: 'Unauthorized',
         });
       }
 

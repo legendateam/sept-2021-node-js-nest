@@ -1,0 +1,1905 @@
+{
+	"info": {
+		"_postman_id": "77d6b714-2c45-4049-a6ae-0393de51a0f2",
+		"name": "Node-nest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17155101"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "registration with avatar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"const responseData = response.data;\r",
+									"const requestBody = pm.request.body.formdata;\r",
+									"\r",
+									"if(responseData) {\r",
+									"    pm.environment.set(\"user_id\", responseData.id);\r",
+									"}\r",
+									"\r",
+									"pm.test(\"Status code is 201\", () => {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check type response\", () => {\r",
+									"    pm.expect(response).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Include response object data\", () => {\r",
+									"    pm.expect(response).to.include.keys('data');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check type response object Data\", () => {\r",
+									"    pm.expect(responseData).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check keys response object Data\", () => {\r",
+									"    pm.expect(responseData).to.include.keys('id','createdAt', 'deletedAt', 'updatedAt', 'name', 'age', 'email', 'phone', 'login', 'status', 'password', 'role', 'avatar');\r",
+									"});\r",
+									"\r",
+									"pm.test('Check the value for uniformy req and res, but without avatar', ()=> {\r",
+									"    requestBody.map(requestValue => {\r",
+									"        if(requestValue.key !== \"avatar\" && requestValue.key !== 'password') {\r",
+									"            const responseDynamicData = responseData[requestValue.key];\r",
+									"            pm.expect(responseDynamicData.toString()).to.equal(requestValue.value)\r",
+									"        }\r",
+									"    })\r",
+									"})\r",
+									"\r",
+									"pm.test('Check response types', () => {\r",
+									"    for(k in responseData) {\r",
+									"        switch(k) {\r",
+									"            case 'id':\r",
+									"            case 'age':\r",
+									"                pm.expect(responseData[k]).to.be.an('number');\r",
+									"                break;\r",
+									"            case 'deletedAt':\r",
+									"                pm.expect(responseData[k]).to.be.an('null');\r",
+									"                break;\r",
+									"            case 'status':\r",
+									"                pm.expect(responseData[k]).to.be.an('boolean');\r",
+									"                break;\r",
+									"            default:\r",
+									"                pm.expect(responseData[k]).to.be.an('string');\r",
+									"        }\r",
+									"    }\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(()=> {\r",
+									"}, 2500)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "{{name}}",
+									"type": "text"
+								},
+								{
+									"key": "age",
+									"value": "{{age}}",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "{{email}}",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "{{phone}}",
+									"type": "text"
+								},
+								{
+									"key": "login",
+									"value": "{{login}}",
+									"type": "text"
+								},
+								{
+									"key": "status",
+									"value": "{{status}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								},
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": "./test/files/62be33fe7b39c7a01490f17b1731b17b181c5935edd42af3c08ca2946131746a_1.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{localhost}}/auth/registration",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"auth",
+								"registration"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonBody = JSON.parse(responseBody);\r",
+									"const response = pm.response.json().data;\r",
+									"\r",
+									"pm.environment.set(\"access_token\", jsonBody.data.access);\r",
+									"pm.environment.set(\"refresh_token\", jsonBody.data.refresh);\r",
+									"\r",
+									"pm.test(\"Status code is 201\", () => {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check keys in data\", () => {\r",
+									"    pm.expect(response).to.have.keys('access', 'refresh', 'userId');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check types in data\", () => {\r",
+									"    pm.expect(response.access).to.be.an('string');\r",
+									"    pm.expect(response.refresh).to.be.an('string');\r",
+									"    pm.expect(response.userId).to.be.an('number');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check userId value\", () => {\r",
+									"    const userId = pm.environment.get('user_id');\r",
+									"    pm.expect(response.userId).to.equal(userId);\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(() => {\r",
+									"}, 500)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/auth/login",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "refresh",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(()=> {\r",
+									"}, 1000)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", () => {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"const dataResponse = pm.response.json().data;\r",
+									"const accessResponse = dataResponse.access;\r",
+									"const refreshResponse = dataResponse.refresh;\r",
+									"const userIdResponse = dataResponse.userId;\r",
+									"\r",
+									"pm.test(\"Check keys in data response\", () => {\r",
+									"    pm.expect(dataResponse).to.have.keys('access', 'refresh', 'userId');\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check types response\", () => {\r",
+									"    pm.expect(accessResponse).to.be.an('string');\r",
+									"    pm.expect(refreshResponse).to.be.an('string');\r",
+									"    pm.expect(userIdResponse).to.be.an('number');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response data value\", () => {\r",
+									"    const accessEnvironment = pm.environment.get('access_token');\r",
+									"    const refreshEnvironment = pm.environment.get('refresh_token');\r",
+									"    const userIdEnvironment = pm.environment.get('user_id');\r",
+									"\r",
+									"    pm.expect(accessResponse).to.not.equal(accessEnvironment);\r",
+									"    pm.expect(refreshResponse).to.not.equal(refreshEnvironment);\r",
+									"    pm.expect(userIdResponse).to.equal(userIdEnvironment);\r",
+									"})\r",
+									"\r",
+									"pm.environment.set('access_token', accessResponse);\r",
+									"pm.environment.set('refresh_token', refreshResponse);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{refresh_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/auth/refresh",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "forgot-password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check on identical old password with new password\", () => {\r",
+									"    const oldPassword = pm.environment.get('password');\r",
+									"    const newPassword = pm.environment.get('newPassword');\r",
+									"\r",
+									"    pm.expect(oldPassword).to.not.equal(newPassword);\r",
+									"})\r",
+									"\r",
+									"const responseData = pm.response.json().data;\r",
+									"\r",
+									"pm.test(\"Check type data resonse\", () => {\r",
+									"    pm.expect(responseData).to.be.an('string');\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check response data value\", () => {\r",
+									"    const successfully = pm.environment.get('successfully');\r",
+									"    pm.expect(responseData).to.equal(successfully);\r",
+									"})\r",
+									"\r",
+									"if(responseData === 'SUCCESSFULLY') {\r",
+									"    const requestData = JSON.parse(pm.request.body.raw);\r",
+									"    const newPasswordEnvironmentChange = pm.environment.get('newPassword');\r",
+									"    \r",
+									"    pm.environment.set('password', requestData.newPassword);\r",
+									"    pm.environment.set('newPassword', `${newPasswordEnvironmentChange}new`)   \r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\",\r\n    \"newPassword\": \"{{newPassword}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/auth/forgot-password",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"auth",
+								"forgot-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "registration without avatar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"const responseData = response.data;\r",
+									"const requestBody = pm.request.body.formdata;\r",
+									"\r",
+									"if(responseData) {\r",
+									"    pm.environment.set(\"user_id\", responseData.id);\r",
+									"}\r",
+									"\r",
+									"pm.test(\"Status code is 201\", () => {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check type response\", () => {\r",
+									"    pm.expect(response).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Include response object data\", () => {\r",
+									"    pm.expect(response).to.include.keys('data');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check type response object Data\", () => {\r",
+									"    pm.expect(responseData).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check keys response object Data\", () => {\r",
+									"    pm.expect(responseData).to.include.keys('id','createdAt', 'deletedAt', 'updatedAt', 'name', 'age', 'email', 'phone', 'login', 'status', 'password', 'role');\r",
+									"});\r",
+									"\r",
+									"pm.test('Check the value for uniformy req and res', ()=> {\r",
+									"    requestBody.map(requestValue => {\r",
+									"        if(requestValue.key !== 'password') {\r",
+									"            const responseDynamicData = responseData[requestValue.key];\r",
+									"            pm.expect(responseDynamicData.toString()).to.equal(requestValue.value);\r",
+									"        }\r",
+									"    })\r",
+									"})\r",
+									"\r",
+									"pm.test('Check response types', () => {\r",
+									"    for(k in responseData) {\r",
+									"        switch(k) {\r",
+									"            case 'id':\r",
+									"            case 'age':\r",
+									"                pm.expect(responseData[k]).to.be.an('number');\r",
+									"                break;\r",
+									"            case 'deletedAt':\r",
+									"            case 'avatar':\r",
+									"                pm.expect(responseData[k]).to.be.an('null');\r",
+									"                break;\r",
+									"            case 'status':\r",
+									"                pm.expect(responseData[k]).to.be.an('boolean');\r",
+									"                break;\r",
+									"                default:\r",
+									"                pm.expect(responseData[k]).to.be.an('string');\r",
+									"        }\r",
+									"    }\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "{{name}}",
+									"type": "text"
+								},
+								{
+									"key": "age",
+									"value": "{{age}}",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "{{email}}",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "{{phone}}",
+									"type": "text"
+								},
+								{
+									"key": "login",
+									"value": "{{login}}",
+									"type": "text"
+								},
+								{
+									"key": "status",
+									"value": "{{status}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{localhost}}/auth/registration",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"auth",
+								"registration"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const successfully = pm.environment.get('successfully')\r",
+									"\r",
+									"pm.test(\"Check response data value\", () => {\r",
+									"    const response = pm.response.json().data;\r",
+									"    pm.expect(response).to.equal(successfully);\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{localhost}}/auth/logout",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Posts",
+			"item": [
+				{
+					"name": "getAll",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/posts",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createOne",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonBody = JSON.parse(responseBody);\r",
+									"const authourId = pm.environment.get('user_id');\r",
+									"\r",
+									"pm.environment.set(\"post_id\", jsonBody.data.id);\r",
+									"\r",
+									"pm.test(\"Status code is 201\", () => {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check author id\", () => {\r",
+									"    pm.expect(authourId).to.equal(jsonBody.data.authorId);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check keys in data\", () => {\r",
+									"    pm.expect(jsonBody.data).to.have.keys('title', 'text', 'published', 'id', 'createdAt', 'updatedAt', 'deletedAt', 'authorId')\r",
+									"})\r",
+									"\r",
+									"pm.test('Check response types', () => {\r",
+									"    for(k in jsonBody.data) {\r",
+									"        switch(k) {\r",
+									"            case 'id':\r",
+									"            case 'authorId':\r",
+									"                pm.expect(jsonBody.data[k]).to.be.an('number');\r",
+									"                break;\r",
+									"            case 'deletedAt':\r",
+									"                pm.expect(jsonBody.data[k]).to.be.an('null');\r",
+									"                break;\r",
+									"            case 'published':\r",
+									"                pm.expect(jsonBody.data[k]).to.be.an('boolean');\r",
+									"                break;\r",
+									"            default:\r",
+									"                pm.expect(jsonBody.data[k]).to.be.an('string');\r",
+									"        }\r",
+									"    }\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{refresh_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"authorId\": {{user_id}},\r\n    \"title\": \"fdcfv\",\r\n    \"text\": \"asdasdasdasdasdasdasdasdasdsd\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/posts",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getOneById",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const jsonBody = JSON.parse(responseBody);\r",
+									"const authourId = pm.environment.get('user_id');\r",
+									"const postId = pm.environment.get('post_id');\r",
+									"\r",
+									"pm.test(\"Check post fields id,authorId after created\", () => {\r",
+									"    pm.expect(jsonBody.data.id).to.equal(postId);\r",
+									"    pm.expect(jsonBody.data.authorId).to.equal(authourId);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check author id\", () => {\r",
+									"    pm.expect(authourId).to.equal(jsonBody.data.authorId);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check keys in data\", () => {\r",
+									"    pm.expect(jsonBody.data).to.have.keys('title', 'text', 'published', 'id', 'createdAt', 'updatedAt', 'deletedAt', 'authorId')\r",
+									"})\r",
+									"\r",
+									"pm.test('Check response types', () => {\r",
+									"    for(k in jsonBody.data) {\r",
+									"        switch(k) {\r",
+									"            case 'id':\r",
+									"            case 'authorId':\r",
+									"                pm.expect(jsonBody.data[k]).to.be.an('number');\r",
+									"                break;\r",
+									"            case 'deletedAt':\r",
+									"                pm.expect(jsonBody.data[k]).to.be.an('null');\r",
+									"                break;\r",
+									"            case 'published':\r",
+									"                pm.expect(jsonBody.data[k]).to.be.an('boolean');\r",
+									"                break;\r",
+									"            default:\r",
+									"                pm.expect(jsonBody.data[k]).to.be.an('string');\r",
+									"        }\r",
+									"    }\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(()=>{\r",
+									"},100)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/posts/{{post_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"posts",
+								"{{post_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateAnyField",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const requestData = JSON.parse(pm.request.body.raw);\r",
+									"const jsonBody = JSON.parse(responseBody);\r",
+									"const authourId = pm.environment.get('user_id');\r",
+									"const postId = pm.environment.get('post_id');\r",
+									"\r",
+									"pm.test(\"Check post fields id,authorId after updated\", () => {\r",
+									"    pm.expect(jsonBody.data.id).to.equal(postId);\r",
+									"    pm.expect(jsonBody.data.authorId).to.equal(authourId);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check values after updated\", () => {\r",
+									"    pm.expect(requestData.text).to.equal(jsonBody.data.text);\r",
+									"    pm.expect(requestData.title).to.equal(jsonBody.data.title);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check keys in data\", () => {\r",
+									"    pm.expect(jsonBody.data).to.have.keys('title', 'text', 'published', 'id', 'createdAt', 'updatedAt', 'deletedAt', 'authorId')\r",
+									"})\r",
+									"\r",
+									"pm.test('Check response types', () => {\r",
+									"    for(k in jsonBody.data) {\r",
+									"        switch(k) {\r",
+									"            case 'id':\r",
+									"            case 'authorId':\r",
+									"                pm.expect(jsonBody.data[k]).to.be.an('number');\r",
+									"                break;\r",
+									"            case 'deletedAt':\r",
+									"                pm.expect(jsonBody.data[k]).to.be.an('null');\r",
+									"                break;\r",
+									"            case 'published':\r",
+									"                pm.expect(jsonBody.data[k]).to.be.an('boolean');\r",
+									"                break;\r",
+									"            default:\r",
+									"                pm.expect(jsonBody.data[k]).to.be.an('string');\r",
+									"        }\r",
+									"    }\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(()=>{\r",
+									"},110)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{refresh_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"patch\",\r\n    \"text\": \"patch324\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/posts/{{post_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"posts",
+								"{{post_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "softDelete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"const successfully = pm.environment.get('successfully')\r",
+									"\r",
+									"pm.test(\"Check response message value\", () => {\r",
+									"    const response = pm.response.json().data;\r",
+									"    pm.expect(response).to.equal(successfully);\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(()=>{\r",
+									"},150)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{refresh_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{localhost}}/posts/softDeleted/{{post_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"posts",
+								"softDeleted",
+								"{{post_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteOne",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const successfully = pm.environment.get('successfully')\r",
+									"\r",
+									"pm.test(\"Check response message value\", () => {\r",
+									"    const response = pm.response.json().data;\r",
+									"    pm.expect(response).to.equal(successfully);\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(()=>{\r",
+									"},165)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/posts/{{post_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"posts",
+								"{{post_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comments",
+			"item": [
+				{
+					"name": "createOne",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseData = JSON.parse(responseBody);\r",
+									"\r",
+									"pm.environment.set(\"comment_id\", responseData.data.id);\r",
+									"\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check keys in data\", () => {\r",
+									"    pm.expect(responseData.data).to.have.keys('name', 'content', 'published', 'id', 'createdAt', 'updatedAt', 'deletedAt', 'userId', 'postId')\r",
+									"});\r",
+									"\r",
+									"pm.test('Check response types', () => {\r",
+									"    for(k in responseData.data) {\r",
+									"        switch(k) {\r",
+									"            case 'id':\r",
+									"            case 'userId':\r",
+									"            case 'postId':\r",
+									"                pm.expect(responseData.data[k]).to.be.an('number');\r",
+									"                break;\r",
+									"            case 'deletedAt':\r",
+									"                pm.expect(responseData.data[k]).to.be.an('null');\r",
+									"                break;\r",
+									"            case 'published':\r",
+									"                pm.expect(responseData.data[k]).to.be.an('boolean');\r",
+									"                break;\r",
+									"            default:\r",
+									"                pm.expect(responseData.data[k]).to.be.an('string');\r",
+									"        }\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{refresh_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"postId\": {{post_id}},\r\n    \"userId\": {{user_id}},\r\n    \"name\": \"fdcfv\",\r\n    \"content\": \"asdasdasdasdasdasdasdasdasdsd\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/comments",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getAll",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json().data;\r",
+									"\r",
+									"const commentId = pm.environment.get('comment_id');\r",
+									"const userId = pm.environment.get('user_id');\r",
+									"const posttId = pm.environment.get('post_id');\r",
+									"\r",
+									"const newComment = responseData.pop();\r",
+									"\r",
+									"pm.test(\"Check commentId,userId,postId, after created\", () => {\r",
+									"    pm.expect(newComment.userId).to.equal(userId);\r",
+									"    pm.expect(newComment.id).to.equal(commentId);\r",
+									"    pm.expect(newComment.postId).to.equal(posttId);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check keys in data\", () => {\r",
+									"    pm.expect(newComment).to.have.keys('name', 'content', 'published', 'id', 'createdAt', 'updatedAt', 'deletedAt', 'userId', 'postId')\r",
+									"});\r",
+									"\r",
+									"pm.test('Check response types', () => {\r",
+									"    for(k in newComment) {\r",
+									"        switch(k) {\r",
+									"            case 'id':\r",
+									"            case 'userId':\r",
+									"            case 'postId':\r",
+									"                pm.expect(newComment[k]).to.be.an('number');\r",
+									"                break;\r",
+									"            case 'deletedAt':\r",
+									"                pm.expect(newComment[k]).to.be.an('null');\r",
+									"                break;\r",
+									"            case 'published':\r",
+									"                pm.expect(newComment[k]).to.be.an('boolean');\r",
+									"                break;\r",
+									"            default:\r",
+									"                pm.expect(newComment[k]).to.be.an('string');\r",
+									"        }\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(() => {\r",
+									"}, 50)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/comments",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getOneById",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json().data;\r",
+									"\r",
+									"const commentId = pm.environment.get('comment_id');\r",
+									"const userId = pm.environment.get('user_id');\r",
+									"const posttId = pm.environment.get('post_id');\r",
+									"\r",
+									"pm.test(\"Check commentId,userId,postId, after created\", () => {\r",
+									"    pm.expect(responseData.userId).to.equal(userId);\r",
+									"    pm.expect(responseData.id).to.equal(commentId);\r",
+									"    pm.expect(responseData.postId).to.equal(posttId);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check keys in data\", () => {\r",
+									"    pm.expect(responseData).to.have.keys('name', 'content', 'published', 'id', 'createdAt', 'updatedAt', 'deletedAt', 'userId', 'postId')\r",
+									"});\r",
+									"\r",
+									"pm.test('Check response types', () => {\r",
+									"    for(k in responseData) {\r",
+									"        switch(k) {\r",
+									"            case 'id':\r",
+									"            case 'userId':\r",
+									"            case 'postId':\r",
+									"                pm.expect(responseData[k]).to.be.an('number');\r",
+									"                break;\r",
+									"            case 'deletedAt':\r",
+									"                pm.expect(responseData[k]).to.be.an('null');\r",
+									"                break;\r",
+									"            case 'published':\r",
+									"                pm.expect(responseData[k]).to.be.an('boolean');\r",
+									"                break;\r",
+									"            default:\r",
+									"                pm.expect(responseData[k]).to.be.an('string');\r",
+									"        }\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/comments/{{comment_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"comments",
+								"{{comment_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateAnyField",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json().data;\r",
+									"\r",
+									"const commentId = pm.environment.get('comment_id');\r",
+									"const userId = pm.environment.get('user_id');\r",
+									"const posttId = pm.environment.get('post_id');\r",
+									"\r",
+									"pm.test(\"Check commentId,userId,postId, after created\", () => {\r",
+									"    pm.expect(responseData.userId).to.equal(userId);\r",
+									"    pm.expect(responseData.id).to.equal(commentId);\r",
+									"    pm.expect(responseData.postId).to.equal(posttId);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check keys in data\", () => {\r",
+									"    pm.expect(responseData).to.have.keys('name', 'content', 'published', 'id', 'createdAt', 'updatedAt', 'deletedAt', 'userId', 'postId')\r",
+									"});\r",
+									"\r",
+									"pm.test('Check response types', () => {\r",
+									"    for(k in responseData) {\r",
+									"        switch(k) {\r",
+									"            case 'id':\r",
+									"            case 'userId':\r",
+									"            case 'postId':\r",
+									"                pm.expect(responseData[k]).to.be.an('number');\r",
+									"                break;\r",
+									"            case 'deletedAt':\r",
+									"                pm.expect(responseData[k]).to.be.an('null');\r",
+									"                break;\r",
+									"            case 'published':\r",
+									"                pm.expect(responseData[k]).to.be.an('boolean');\r",
+									"                break;\r",
+									"            default:\r",
+									"                pm.expect(responseData[k]).to.be.an('string');\r",
+									"        }\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{refresh_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"newName\",\r\n    \"published\": true,\r\n    \"content\": \"new content, somebody help me for better cooding\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/comments/{{comment_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"comments",
+								"{{comment_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "softDeleteOne",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const successfully = pm.environment.get('successfully')\r",
+									"\r",
+									"pm.test(\"Check response message value\", () => {\r",
+									"    const response = pm.response.json().data;\r",
+									"    pm.expect(response).to.equal(successfully);\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{refresh_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{localhost}}/comments/softDeleted/{{comment_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"comments",
+								"softDeleted",
+								"{{comment_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteOne",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const successfully = pm.environment.get('successfully')\r",
+									"\r",
+									"pm.test(\"Check response message value\", () => {\r",
+									"    const response = pm.response.json().data;\r",
+									"    pm.expect(response).to.equal(successfully);\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/comments/{{comment_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"comments",
+								"{{comment_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "getAll",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"const responseData = response.data;\r",
+									"\r",
+									"pm.test(\"Check type response and include key data\", () => {\r",
+									"    pm.expect(response).to.be.an('object');\r",
+									"    pm.expect(response).to.include.keys('data');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check type key data in response\", () => {\r",
+									"    pm.expect(responseData).to.be.an('array');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check keys in array data, in users objects\", () => {\r",
+									"    responseData.forEach(user => {\r",
+									"        pm.expect(user).to.include.keys('id', 'createdAt', 'updatedAt', 'deletedAt', 'name', 'age', 'email', 'phone', 'login', 'status', 'password', 'role', 'avatar');\r",
+									"        \r",
+									"        pm.expect(user.id).to.be.an('number');\r",
+									"        pm.expect(user.createdAt).to.be.an('string');\r",
+									"        pm.expect(user.updatedAt).to.be.an('string');\r",
+									"        pm.expect(user.deletedAt).to.be.an('null');\r",
+									"        pm.expect(user.name).to.be.a('string');\r",
+									"        pm.expect(user.email).to.be.a('string');\r",
+									"        pm.expect(user.phone).to.be.a('string');\r",
+									"        pm.expect(user.login).to.be.a('string');\r",
+									"        pm.expect(user.status).to.be.a('boolean');\r",
+									"        pm.expect(user.password).to.be.a('string');\r",
+									"        pm.expect(user.role).to.be.a('string');\r",
+									"        \r",
+									"        if(typeof user.avatar === 'string') {\r",
+									"            pm.expect(user.avatar).to.be.a('string');\r",
+									"        }\r",
+									"\r",
+									"        if(typeof user.avatar === 'null') {\r",
+									"            pm.expect(user.avatar.to.be.a('null'));\r",
+									"        }\r",
+									"    })\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check on include newly created user\", () => {\r",
+									"    const email = pm.environment.get('email');\r",
+									"    responseData.find(user => user.email === email);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/users",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getOneById",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check key data in response\", () => {\r",
+									"    const response = pm.response.json();\r",
+									"    pm.expect(response).to.have.key('data');\r",
+									"})\r",
+									"\r",
+									"const user = pm.response.json().data;\r",
+									"\r",
+									"pm.test(\"Check keys in user\", () => {\r",
+									"     pm.expect(user).to.include.keys('id', 'createdAt', 'updatedAt', 'deletedAt', 'name', 'age', 'email', 'phone', 'login', 'status', 'password', 'role', 'avatar');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check types value in user\", () => {\r",
+									"    for(k in user) {\r",
+									"        switch(k) {\r",
+									"            case 'id':\r",
+									"            case 'age':\r",
+									"                pm.expect(user[k]).to.be.an('number');\r",
+									"                break;\r",
+									"            case 'status':\r",
+									"                pm.expect(user[k]).to.be.an('boolean');\r",
+									"                break;\r",
+									"            case 'avatar': \r",
+									"                if(typeof user[k] === 'string'){\r",
+									"                    pm.expect(user[k]).to.be.an('string');\r",
+									"                }\r",
+									"                if(user[k] === null) {\r",
+									"                    pm.expect(user[k]).to.be.an('null');\r",
+									"                    break;\r",
+									"                }\r",
+									"                break;\r",
+									"            case 'deletedAt':\r",
+									"                pm.expect(user[k]).to.be.an('null');\r",
+									"                break;\r",
+									"            default:\r",
+									"            pm.expect(user[k]).to.be.an('string');\r",
+									"        }\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/users/{{user_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "replaceOneById",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const requestData = JSON.parse(pm.request.body.raw);\r",
+									"const responseData = pm.response.json().data;\r",
+									"\r",
+									"pm.test(\"Compare values req and res\", () => {\r",
+									"    for(k in requestData) {\r",
+									"        if(k !== 'password') {\r",
+									"            pm.expect(responseData[k]).to.equal(requestData[k]);\r",
+									"        }\r",
+									"    }\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check keys in response object\" , () => {\r",
+									"    pm.expect(responseData).to.include.keys('id','createdAt', 'deletedAt', 'updatedAt', 'name', 'age', 'email', 'phone', 'login', 'status', 'password', 'role', 'avatar');\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check types value in response\", () => {\r",
+									"    for(k in responseData) {\r",
+									"        switch(k) {\r",
+									"            case 'id':\r",
+									"            case 'age':\r",
+									"                pm.expect(responseData[k]).to.be.an('number');\r",
+									"                break;\r",
+									"            case 'status':\r",
+									"                pm.expect(responseData[k]).to.be.an('boolean');\r",
+									"                break;\r",
+									"            case 'avatar': \r",
+									"                if(typeof responseData[k] === 'string'){\r",
+									"                    pm.expect(responseData[k]).to.be.an('string');\r",
+									"                }\r",
+									"                if(responseData[k] === null) {\r",
+									"                    pm.expect(responseData[k]).to.be.an('null');\r",
+									"                    break;\r",
+									"                }\r",
+									"                break;\r",
+									"            case 'deletedAt':\r",
+									"                pm.expect(responseData[k]).to.be.an('null');\r",
+									"                break;\r",
+									"            default:\r",
+									"            pm.expect(responseData[k]).to.be.an('string');\r",
+									"        }\r",
+									"    }\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(()=>{\r",
+									"}, 250)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{refresh_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Sergio\",\r\n    \"age\": 20,\r\n    \"email\": \"newEmail@email.com\",\r\n    \"phone\": \"+380(55)-55-55-555\",\r\n    \"login\": \"asddd\",\r\n    \"status\": true,\r\n    \"password\": \"Asdqwe54321\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/users/{{user_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateAnyField",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const requestData = JSON.parse(pm.request.body.raw);\r",
+									"const responseData = pm.response.json().data;\r",
+									"\r",
+									"pm.test(\"Compare values req and res\", () => {\r",
+									"    for(k in requestData) {\r",
+									"        if(k !== 'password') {\r",
+									"            pm.expect(responseData[k]).to.equal(requestData[k]);\r",
+									"        }\r",
+									"    }\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check keys in response object\" , () => {\r",
+									"    pm.expect(responseData).to.include.any.keys('id','createdAt', 'deletedAt', 'updatedAt', 'name', 'age', 'email', 'phone', 'login', 'status', 'password', 'role', 'avatar');\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check types value in response\", () => {\r",
+									"    for(k in responseData) {\r",
+									"        switch(k) {\r",
+									"            case 'id':\r",
+									"            case 'age':\r",
+									"                pm.expect(responseData[k]).to.be.an('number');\r",
+									"                break;\r",
+									"            case 'status':\r",
+									"                pm.expect(responseData[k]).to.be.an('boolean');\r",
+									"                break;\r",
+									"            case 'avatar': \r",
+									"                if(typeof responseData[k] === 'string'){\r",
+									"                    pm.expect(responseData[k]).to.be.an('string');\r",
+									"                }\r",
+									"                if(responseData[k] === null) {\r",
+									"                    pm.expect(responseData[k]).to.be.an('null');\r",
+									"                    break;\r",
+									"                }\r",
+									"                break;\r",
+									"            case 'deletedAt':\r",
+									"                pm.expect(responseData[k]).to.be.an('null');\r",
+									"                break;\r",
+									"            default:\r",
+									"            pm.expect(responseData[k]).to.be.an('string');\r",
+									"        }\r",
+									"    }\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{refresh_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Oleg\",\r\n    \"role\": \"USER\",\r\n    \"status\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/users/{{user_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update Avatar",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{refresh_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": "./test/files/62be33fe7b39c7a01490f17b1731b17b181c5935edd42af3c08ca2946131746a_1.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{localhost}}/users/{{user_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "softDeleteOne",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const successfully = pm.environment.get('successfully')\r",
+									"\r",
+									"pm.test(\"Check response message value\", () => {\r",
+									"    const response = pm.response.json().message;\r",
+									"    pm.expect(response).to.equal(successfully);\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{refresh_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{localhost}}/users/softDeletes/{{user_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"users",
+								"softDeletes",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get All Soft Deleted",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"const responseData = response.data;\r",
+									"const user = responseData.pop();\r",
+									"\r",
+									"pm.test(\"Check type response\", () => {\r",
+									"    pm.expect(response).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Include response object data\", () => {\r",
+									"    pm.expect(response).to.include.keys('data');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check type response object Data\", () => {\r",
+									"    pm.expect(responseData).to.be.an('array');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check keys response object Data\", () => {\r",
+									"    pm.expect(user).to.include.keys('id','createdAt', 'deletedAt', 'updatedAt', 'name', 'age', 'email', 'phone', 'login', 'status', 'password', 'role', 'avatar');\r",
+									"});\r",
+									"\r",
+									"pm.test('Whether the user just been deleted fron the list', ()=> {\r",
+									"    const userId = pm.environment.get('user_id');\r",
+									"    pm.expect(user.id).to.equal(userId);\r",
+									"})\r",
+									"\r",
+									"pm.test('Check response types', () => {\r",
+									"    for(k in user) {\r",
+									"        switch(k) {\r",
+									"            case 'id':\r",
+									"            case 'age':\r",
+									"                pm.expect(user[k]).to.be.an('number');\r",
+									"                break;\r",
+									"            case 'status':\r",
+									"                pm.expect(user[k]).to.be.an('boolean');\r",
+									"                break;\r",
+									"                case 'avatar': \r",
+									"                if(typeof user[k] === 'string'){\r",
+									"                    pm.expect(user[k]).to.be.an('string');\r",
+									"                }\r",
+									"                if(user[k] === null) {\r",
+									"                    pm.expect(user[k]).to.be.an('null');\r",
+									"                    break;\r",
+									"                }\r",
+									"                break;\r",
+									"            default:\r",
+									"                pm.expect(user[k]).to.be.an('string');\r",
+									"        }\r",
+									"    }\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/users/deleted",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"users",
+								"deleted"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteOne",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"const responseMessage = response.message;\r",
+									"\r",
+									"pm.test(\"Check key reponse\", () => {\r",
+									"    pm.expect(response).to.have.keys('message');\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check type message\", () => {\r",
+									"    pm.expect(responseMessage).to.be.a('string');\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Check value message\", () => {\r",
+									"    const successfully = pm.environment.get('successfully');\r",
+									"    pm.expect(responseMessage).to.equal(successfully)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/users/{{user_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

@@ -8,14 +8,21 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Post as PostDB } from '@prisma/client';
 
 import { PostService } from './post.service';
 import { IResponse } from '../../interfaces';
 import { CreatePostDto, UpdatePostDto } from './dto';
 import { MainEnum } from '../../enum';
+import { AuthGuard } from '../auth/guards';
 
 @ApiTags('posts')
 @Controller('posts')
@@ -80,6 +87,7 @@ export class PostController {
     return this.postService.getOneById(id);
   }
 
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'updated one post' })
   @ApiOkResponse({
     schema: {
@@ -106,8 +114,9 @@ export class PostController {
     return this.postService.updateOne(data, id);
   }
 
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'create post' })
-  @ApiOkResponse({
+  @ApiCreatedResponse({
     schema: {
       example: {
         data: {
@@ -123,7 +132,7 @@ export class PostController {
       },
     },
   })
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   @Post('')
   public async createOne(
     @Body() post: CreatePostDto,
@@ -131,6 +140,7 @@ export class PostController {
     return this.postService.createOne(post);
   }
 
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'delete post for user but post remains in db' })
   @ApiOkResponse({
     schema: {
@@ -156,7 +166,7 @@ export class PostController {
     },
   })
   @HttpCode(HttpStatus.OK)
-  @Delete('')
+  @Delete(':id')
   public async deleteOne(
     @Param('id') id: string,
   ): Promise<IResponse<MainEnum.SUCCESSFULLY>> {

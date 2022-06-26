@@ -44,7 +44,7 @@ export class CommentService {
     { content, published, name }: Prisma.CommentUpdateInput,
     paramsId: string,
   ): Promise<IResponse<Comment>> {
-    if (content && published && name) {
+    if (!content && !published && !name) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,

@@ -6,6 +6,7 @@ import { UserController } from './user.controller';
 import { S3Module } from '../s3/s3.module';
 import { FileUploadInterceptorService } from '../../helpers';
 import { S3Service } from '../s3/s3.service';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   providers: [
@@ -14,7 +15,7 @@ import { S3Service } from '../s3/s3.service';
     FileUploadInterceptorService,
     S3Service,
   ],
-  imports: [S3Module],
+  imports: [S3Module, forwardRef(() => AuthModule)],
   controllers: [UserController],
 })
 export class UserModule {}

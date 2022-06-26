@@ -18,7 +18,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:newman": "newman run test/Node-nest.postman_collection.json -e test/homeWork-nest.postman_environment.json -n 1 --insecure"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",
@@ -35,6 +36,7 @@
     "class-validator": "^0.13.2",
     "dayjs": "^1.11.3",
     "dotenv": "^16.0.1",
+    "newman": "^5.3.2",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",

@@ -7,7 +7,9 @@ import {
   HttpStatus,
   Param,
   Patch,
+  Put,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -15,11 +17,12 @@ import { User } from '@prisma/client';
 
 import { IResponse } from '../../interfaces';
 import { UserService } from './user.service';
-import { UpdatedUserDto } from './dto';
+import { ReplaceDataUserDto, UpdatedUserDto } from './dto';
 import { MainEnum } from '../../enum';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { fileFilter, fileName } from '../../helpers';
+import { AuthGuard } from '../auth/guards';
 
 @ApiTags('users')
 @Controller('users')
@@ -43,7 +46,8 @@ export class UserController {
             phone: '+380(63)-44-44-444',
             login: 'userr',
             status: false,
-            password: 'Qwerty12345',
+            password:
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
             role: 'USER',
           },
           {
@@ -57,7 +61,8 @@ export class UserController {
             phone: '+380(63)-44-44-444',
             login: 'userr',
             status: false,
-            password: 'Qwerty12345',
+            password:
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
             role: 'USER',
           },
         ],
@@ -87,7 +92,8 @@ export class UserController {
             phone: '+380(63)-44-44-444',
             login: 'userr',
             status: false,
-            password: 'Qwerty12345',
+            password:
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
             role: 'USER',
           },
           {
@@ -129,7 +135,8 @@ export class UserController {
           phone: '+380(63)-44-44-444',
           login: 'userr',
           status: false,
-          password: 'Qwerty12345',
+          password:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
           role: 'USER',
         },
       },
@@ -156,12 +163,14 @@ export class UserController {
           phone: '+380(63)-44-44-444',
           login: 'userr',
           status: false,
-          password: 'Qwerty12345',
+          password:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
           role: 'USER',
         },
       },
     },
   })
+  @UseGuards(AuthGuard)
   @UseInterceptors(
     FileInterceptor('avatar', {
       storage: diskStorage({
@@ -181,6 +190,47 @@ export class UserController {
     return this.userService.updateOne(data, id, file);
   }
 
+  @ApiOperation({ summary: 'replace all values user' })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        data: {
+          id: 1,
+          createdAt: '2022-06-14T18:46:19.683Z',
+          updatedAt: '2022-06-14T18:46:19.686Z',
+          deletedAt: null,
+          name: 'Oleg',
+          age: 30,
+          email: 'email@email.com',
+          phone: '+380(63)-44-44-444',
+          login: 'userr',
+          status: false,
+          password:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
+          role: 'USER',
+        },
+      },
+    },
+  })
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorage({
+        filename: fileName,
+      }),
+      fileFilter: fileFilter,
+    }),
+  )
+  @Put(':id')
+  public replaceData(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id') id: string,
+    @Body() data: ReplaceDataUserDto,
+  ): Promise<IResponse<User>> {
+    return this.userService.replaceData(data, id, file);
+  }
+
   @ApiOperation({ summary: 'delete for user, but further stored in db' })
   @ApiOkResponse({
     schema: {
@@ -190,6 +240,7 @@ export class UserController {
     },
   })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
   @Delete('softDeletes/:id')
   public async softDeleteOne(
     @Param('id') id: string,

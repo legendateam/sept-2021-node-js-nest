@@ -13,10 +13,10 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { regEx } from '../../user/constants';
-import { RoleEnum } from '../../user/enum';
+import { regEx } from '../constants';
+import { RoleEnum } from '../enum';
 
-export class CreatedUserDto {
+export class ReplaceDataUserDto {
   @ApiProperty({
     required: true,
     minLength: 2,
@@ -40,7 +40,9 @@ export class CreatedUserDto {
     required: true,
   })
   @IsNotEmpty()
-  @IsString()
+  @IsNumber()
+  @Min(12)
+  @Max(250)
   public age: number;
 
   @ApiProperty({
@@ -90,7 +92,7 @@ export class CreatedUserDto {
     required: true,
     name: 'status',
   })
-  @IsString()
+  @IsBoolean()
   @IsNotEmpty()
   public status: boolean;
 
@@ -109,7 +111,7 @@ export class CreatedUserDto {
       'The password must have one uppercase letter,' +
       'one lowercase letter and one digit. Length: min 7, max 25',
   })
-  public readonly password: string;
+  public password: string;
 
   @ApiProperty({ enum: RoleEnum, required: false, default: RoleEnum.USER })
   @IsOptional()

@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 
 import { PrismaService } from '../../core/prisma.service';
@@ -10,6 +15,8 @@ import { S3Service } from '../s3/s3.service';
 import { TypeFileUploadEnum } from '../../enum/type-file-upload.enum';
 import fs from 'fs';
 import path from 'path';
+import bcrypt from 'bcrypt';
+import { mainConfig } from '../../configs';
 
 dayjs.extend(utc);
 
@@ -89,6 +96,14 @@ export class UserService {
         fs.unlink(path.join(process.cwd(), 'avatars', file.filename), (err) => {
           if (err) console.error(err.message);
         });
+
+        const id = Number(paramsId);
+        const updatedUserWithAvatar = await this.prismaService.user.update({
+          where: { id },
+          data: { status, role, name, avatar: file.filename },
+        });
+
+        return { data: updatedUserWithAvatar };
       } catch (e) {
         if (e) console.error(e.message);
       }
@@ -97,7 +112,7 @@ export class UserService {
     const id = Number(paramsId);
     const updatedUser = await this.prismaService.user.update({
       where: { id },
-      data: { status, role, name, avatar: file.filename },
+      data: { status, role, name },
     });
 
     return {
@@ -127,5 +142,75 @@ export class UserService {
     await this.prismaService.user.delete({ where: { id } });
 
     return { message: MainEnum.SUCCESSFULLY };
+  }
+
+  public async replaceData(
+    data: Prisma.UserUpdateInput,
+    paramId: string,
+    file: Express.Multer.File,
+  ): Promise<IResponse<User>> {
+    if (!data) {
+      throw new BadRequestException();
+    }
+
+    if (
+      !data.password ||
+      !data.status ||
+      !data.email ||
+      !data.name ||
+      !data.age ||
+      !data.login ||
+      !data.phone
+    ) {
+      throw new BadRequestException();
+    }
+    const id = Number(paramId);
+
+    const passwordHashed = await bcrypt.hash(
+      `${data.password}`,
+      Number(mainConfig.BCRYPT_SALT),
+    );
+
+    if (file) {
+      try {
+        await this.s3Service.fileUpload(file, TypeFileUploadEnum.USERS);
+        fs.unlink(path.join(process.cwd(), 'avatars', file.filename), (err) => {
+          if (err) console.error(err.message);
+        });
+
+        const newDataWithFile = await this.prismaService.user.update({
+          where: { id },
+          data: {
+            status: data.status,
+            age: data.age,
+            phone: data.phone,
+            email: data.email,
+            login: data.login,
+            name: data.name,
+            password: passwordHashed,
+            avatar: file.filename,
+          },
+        });
+
+        return { data: newDataWithFile };
+      } catch (e) {
+        if (e) console.error(e.message);
+      }
+    }
+
+    const newData = await this.prismaService.user.update({
+      where: { id },
+      data: {
+        status: data.status,
+        age: data.age,
+        phone: data.phone,
+        email: data.email,
+        login: data.login,
+        name: data.name,
+        password: passwordHashed,
+      },
+    });
+
+    return { data: newData };
   }
 }

@@ -47,21 +47,40 @@ export class AuthService {
       Number(mainConfig.BCRYPT_SALT),
     );
 
+    if (typeof user.status === 'string') {
+      if (user.status === 'false') {
+        user.status = !user.status;
+      }
+      if (user.status.toString() === 'true') {
+        user.status = !!user.status;
+      }
+    }
+
     try {
-      await this.s3Service.fileUpload(file, TypeFileUploadEnum.USERS);
+      if (file) {
+        await this.s3Service.fileUpload(file, TypeFileUploadEnum.USERS);
+        const userDB = await this.prismaService.user.create({
+          data: {
+            ...user,
+            password: hashPassword,
+            age: Number(user.age),
+            avatar: file.filename,
+          },
+        });
+
+        fs.unlink(path.join(process.cwd(), 'avatars', file.filename), (err) => {
+          if (err) console.error(err.message);
+        });
+
+        return { data: userDB };
+      }
 
       const userDB = await this.prismaService.user.create({
         data: {
           ...user,
           password: hashPassword,
           age: Number(user.age),
-          status: Boolean(user.status),
-          avatar: file.filename,
         },
-      });
-
-      fs.unlink(path.join(process.cwd(), 'avatars', file.filename), (err) => {
-        if (err) console.error(err.message);
       });
 
       return { data: userDB };
@@ -106,6 +125,10 @@ export class AuthService {
     access_token: string,
     data: IForgotPassword,
   ): Promise<IResponse<MainEnum.SUCCESSFULLY>> {
+    if (data.password === data.newPassword) {
+      throw new BadRequestException();
+    }
+
     const verifyToken = this.verifyToken(access_token);
 
     if (!verifyToken) {

@@ -69,7 +69,7 @@ export class AuthController {
       },
     },
   })
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FileInterceptor('avatar', {
       storage: diskStorage({
@@ -89,7 +89,7 @@ export class AuthController {
 
   @UseGuards(LoginUserExistGuard)
   @ApiOperation({ summary: 'User authorization' })
-  @ApiOkResponse({
+  @ApiCreatedResponse({
     schema: {
       example: {
         data: {
@@ -97,7 +97,7 @@ export class AuthController {
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
           refresh:
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGdtYWkuY29tIiwicGFzc3dv',
-          userid: 1,
+          userId: 1,
         },
       },
     },
@@ -111,6 +111,7 @@ export class AuthController {
       },
     },
   })
+  @HttpCode(HttpStatus.CREATED)
   @Post('login')
   public login(
     @Req() req: IRequestUserMiddleware,
@@ -138,6 +139,7 @@ export class AuthController {
       },
     },
   })
+  @HttpCode(HttpStatus.OK)
   @Post('logout')
   public logout(
     @Req() req: ITokenMiddleware,
@@ -165,6 +167,7 @@ export class AuthController {
       },
     },
   })
+  @HttpCode(HttpStatus.OK)
   @Patch('forgot-password')
   public forgotPassword(
     @Req() req: ITokenMiddleware,
@@ -178,7 +181,7 @@ export class AuthController {
   @ApiOperation({
     summary: 'refresh for new generate pair tokens access and refresh',
   })
-  @ApiOkResponse({
+  @ApiCreatedResponse({
     schema: {
       example: {
         data: {
@@ -200,6 +203,7 @@ export class AuthController {
       },
     },
   })
+  @HttpCode(HttpStatus.CREATED)
   @Post('refresh')
   public async refresh(
     @Req() req: ITokenMiddleware,
