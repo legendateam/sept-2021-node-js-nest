@@ -68,9 +68,12 @@ export class AuthService {
           },
         });
 
-        fs.unlink(path.join(process.cwd(), 'avatars', file.filename), (err) => {
-          if (err) console.error(err.message);
-        });
+        await fs.unlink(
+          path.join(process.cwd(), 'avatars', file.filename),
+          (err) => {
+            if (err) console.error(err.message);
+          },
+        );
 
         return { data: userDB };
       }
